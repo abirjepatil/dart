@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2015, Georgia Tech Research Corporation
+ * Copyright (c) 2015, Georgia Tech Research Corporation
  * All rights reserved.
  *
  * Author(s): Jeongseok Lee <jslee02@gmail.com>
@@ -34,67 +34,41 @@
  *   POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DART_COLLISION_FCL_FCLCOLLISIONNODE_H_
-#define DART_COLLISION_FCL_FCLCOLLISIONNODE_H_
-
-#include <vector>
-
-#include <assimp/scene.h>
-#include <Eigen/Dense>
-#include <fcl/collision.h>
-#include <fcl/BVH/BVH_model.h>
-
-#include "dart/common/Deprecated.h"
-#include "dart/collision/CollisionNode.h"
-
-namespace dart {
-namespace dynamics {
-class BodyNode;
-class Shape;
-}  // namespace dynamics
-}  // namespace dart
+#include "dart/collision/fcl/FCLTypes.h"
 
 namespace dart {
 namespace collision {
 
-/// FCLCollisionNode
-class FCLCollisionNode : public CollisionNode
+//==============================================================================
+Eigen::Vector3d FCLTypes::convertVector3(const fcl::Vec3f& _vec)
 {
-public:
-  /// Constructor
-  explicit FCLCollisionNode(dynamics::BodyNode* _bodyNode);
+  return Eigen::Vector3d(_vec[0], _vec[1], _vec[2]);
+}
 
-  /// Destructor
-  virtual ~FCLCollisionNode();
+//==============================================================================
+fcl::Vec3f FCLTypes::convertVector3(const Eigen::Vector3d& _vec)
+{
+  return fcl::Vec3f(_vec[0], _vec[1], _vec[2]);
+}
 
-  /// Get number of collision geometries
-  size_t getNumCollisionGeometries() const;
+//==============================================================================
+fcl::Matrix3f FCLTypes::convertMatrix3x3(const Eigen::Matrix3d& _R)
+{
+  return fcl::Matrix3f(_R(0, 0), _R(0, 1), _R(0, 2),
+                       _R(1, 0), _R(1, 1), _R(1, 2),
+                       _R(2, 0), _R(2, 1), _R(2, 2));
+}
 
-  /// Get FCL collision geometry given index
-  fcl::CollisionGeometry* getCollisionGeometry(size_t _idx) const;
+//==============================================================================
+fcl::Transform3f FCLTypes::convertTransform(const Eigen::Isometry3d& _T)
+{
+  fcl::Transform3f trans;
 
-  /// Get FCL transformation of shape given index
-  fcl::Transform3f getFCLTransform(size_t _idx) const;
+  trans.setTranslation(convertVector3(_T.translation()));
+  trans.setRotation(convertMatrix3x3(_T.linear()));
 
-private:
-  /// Array of FCL collision geometry
-  std::vector<fcl::CollisionGeometry*> mCollisionGeometries;
-
-  /// Array of shapes
-  std::vector<dynamics::Shape*> mShapes;
-};
-
-///  Create FCL mesh from Assimp mesh
-template<class BV>
-fcl::BVHModel<BV>* createMesh(float _sizeX, float _sizeY, float _sizeZ,
-                              const aiScene* _mesh);
-
-/// Create FCL mesh from ellipsoid shape
-template<class BV>
-DEPRECATED(4.3)
-fcl::BVHModel<BV>* createEllipsoid(float _sizeX, float _sizeY, float _sizeZ);
+  return trans;
+}
 
 }  // namespace collision
 }  // namespace dart
-
-#endif  // DART_COLLISION_FCL_FCLCOLLISIONNODE_H_

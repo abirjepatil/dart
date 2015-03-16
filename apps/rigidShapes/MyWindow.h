@@ -64,17 +64,19 @@ public:
   // Documentation inherited
   virtual void drawSkels() override;
 
-  ///
+  /// Spawn a box into the world
   void spawnBox(
       const Eigen::Isometry3d& _T,
       const Eigen::Vector3d& _size = Eigen::Vector3d(0.1, 0.1, 0.1),
       double _mass = 10);
 
+  /// Spawn a ellipsoid into the world
   void spawnEllipsoid(
       const Eigen::Isometry3d& _T,
       const Eigen::Vector3d& _radii = Eigen::Vector3d(0.1, 0.1, 0.1),
       double _mass = 10);
 
+  /// Spawn a cylinder into the world
   void spawnCylinder(
       const Eigen::Isometry3d& _T,
       double _radius = 0.05,
