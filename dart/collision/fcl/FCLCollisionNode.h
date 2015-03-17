@@ -42,6 +42,7 @@
 #include <assimp/scene.h>
 #include <Eigen/Dense>
 #include <fcl/collision.h>
+#include <fcl/collision_object.h>
 #include <fcl/BVH/BVH_model.h>
 
 #include "dart/common/Deprecated.h"
@@ -57,6 +58,15 @@ class Shape;
 namespace dart {
 namespace collision {
 
+class FCLCollisionNode;
+
+struct FCLUserData
+{
+  FCLCollisionNode* fclCollNode;
+  dynamics::BodyNode* bodyNode;
+  dynamics::Shape* shape;
+};
+
 /// FCLCollisionNode
 class FCLCollisionNode : public CollisionNode
 {
@@ -68,26 +78,39 @@ public:
   virtual ~FCLCollisionNode();
 
   /// Get number of collision geometries
+  DEPRECATED(4.3)
   size_t getNumCollisionGeometries() const;
 
+  /// Get number of collision objects
+  size_t getNumCollisionObjects() const;
+
   /// Get FCL collision geometry given index
-  fcl::CollisionGeometry* getCollisionGeometry(size_t _idx) const;
+  DEPRECATED(4.3)
+  const fcl::CollisionGeometry* getCollisionGeometry(size_t _idx) const;
+
+  /// Get FCL collision object given index
+  fcl::CollisionObject* getCollisionObject(size_t _idx) const;
 
   /// Get FCL transformation of shape given index
   fcl::Transform3f getFCLTransform(size_t _idx) const;
 
-private:
-  /// Array of FCL collision geometry
-  std::vector<fcl::CollisionGeometry*> mCollisionGeometries;
+  /// Update transformation and AABB of all the fcl collision objects.
+  void updateFCLCollisionObjects();
 
-  /// Array of shapes
-  std::vector<dynamics::Shape*> mShapes;
+private:
+  /// Array of FCL collision object that continas geometry and transform
+  std::vector<fcl::CollisionObject*> mCollisionObjects;
 };
 
-///  Create FCL mesh from Assimp mesh
+/// Create FCL mesh from Assimp mesh
 template<class BV>
 fcl::BVHModel<BV>* createMesh(float _sizeX, float _sizeY, float _sizeZ,
                               const aiScene* _mesh);
+
+/// Create FCL mesh from Assimp mesh
+template<class BV>
+fcl::BVHModel<BV>* createSoftMesh(const aiMesh* _mesh,
+                                  const fcl::Transform3f& _transform);
 
 /// Create FCL mesh from ellipsoid shape
 template<class BV>

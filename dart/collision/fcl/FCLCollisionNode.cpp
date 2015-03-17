@@ -40,11 +40,15 @@
 #include <fcl/shape/geometric_shapes.h>
 #include <fcl/shape/geometric_shape_to_BVH_model.h>
 
+#include "dart/common/Console.h"
 #include "dart/dynamics/BodyNode.h"
 #include "dart/dynamics/BoxShape.h"
 #include "dart/dynamics/EllipsoidShape.h"
 #include "dart/dynamics/CylinderShape.h"
+#include "dart/dynamics/Shape.h"
 #include "dart/dynamics/MeshShape.h"
+#include "dart/dynamics/SoftMeshShape.h"
+#include "dart/collision/fcl/FCLTypes.h"
 
 namespace dart {
 namespace collision {
@@ -53,66 +57,160 @@ namespace collision {
 FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
   : CollisionNode(_bodyNode)
 {
+  using dynamics::Shape;
+  using dynamics::BoxShape;
+  using dynamics::EllipsoidShape;
+  using dynamics::CylinderShape;
+  using dynamics::MeshShape;
+  using dynamics::SoftMeshShape;
+
   for (size_t i = 0; i < _bodyNode->getNumCollisionShapes(); i++)
   {
-    dynamics::Shape* shape = _bodyNode->getCollisionShape(i);
-    mShapes.push_back(shape);
+    Shape* shape = _bodyNode->getCollisionShape(i);
+
     switch (shape->getShapeType())
     {
-      case dynamics::Shape::BOX:
+      case Shape::BOX:
       {
-        dynamics::BoxShape* box
-                    = static_cast<dynamics::BoxShape*>(shape);
-        mCollisionGeometries.push_back(new fcl::Box(box->getSize()[0],
-                                                    box->getSize()[1],
-                                                    box->getSize()[2]));
+        assert(dynamic_cast<BoxShape*>(shape));
+        BoxShape* box = static_cast<BoxShape*>(shape);
+
+        const Eigen::Vector3d& size = box->getSize();
+
+        boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+              new fcl::Box(size[0], size[1], size[2]));
+
+        fcl::CollisionObject* fclCollObj
+            = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+        FCLUserData* userData = new FCLUserData;
+        userData->bodyNode    = _bodyNode;
+        userData->shape       = shape;
+        userData->fclCollNode = this;
+        fclCollObj->setUserData(userData);
+
+        mCollisionObjects.push_back(fclCollObj);
+
         break;
       }
-      case dynamics::Shape::ELLIPSOID:
+      case Shape::ELLIPSOID:
       {
-        dynamics::EllipsoidShape* ellipsoid
-            = static_cast<dynamics::EllipsoidShape*>(shape);
+        assert(dynamic_cast<EllipsoidShape*>(shape));
+        EllipsoidShape* ellipsoid = static_cast<EllipsoidShape*>(shape);
+
+        const Eigen::Vector3d& size = ellipsoid->getSize();
 
         if (ellipsoid->isSphere())
         {
-          mCollisionGeometries.push_back(
-                new fcl::Sphere(ellipsoid->getSize()[0] * 0.5));
+          boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+              new fcl::Sphere(size[0] * 0.5));
+
+          fcl::CollisionObject* fclCollObj
+              = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+          FCLUserData* userData = new FCLUserData;
+          userData->bodyNode    = _bodyNode;
+          userData->shape       = shape;
+          userData->fclCollNode = this;
+          fclCollObj->setUserData(userData);
+
+          mCollisionObjects.push_back(fclCollObj);
         }
         else
         {
-          mCollisionGeometries.push_back(
-                new fcl::Ellipsoid(ellipsoid->getSize()[0] * 0.5,
-                                   ellipsoid->getSize()[1] * 0.5,
-                                   ellipsoid->getSize()[2] * 0.5));
-        }
-        break;
-      }
-      case dynamics::Shape::CYLINDER:
-      {
-        dynamics::CylinderShape* cylinder
-            = static_cast<dynamics::CylinderShape*>(shape);
-        mCollisionGeometries.push_back(
-              new fcl::Cylinder(cylinder->getRadius(), cylinder->getHeight()));
-        break;
-      }
-      case dynamics::Shape::MESH:
-      {
-        dynamics::MeshShape* shapeMesh
-            = dynamic_cast<dynamics::MeshShape *>(shape);
+          boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+              new fcl::Ellipsoid(size[0] * 0.5, size[1] * 0.5, size[2] * 0.5));
 
-        if (shapeMesh)
-          mCollisionGeometries.push_back(
-                createMesh<fcl::OBBRSS>(shapeMesh->getScale()[0],
-                                        shapeMesh->getScale()[1],
-                                        shapeMesh->getScale()[2],
-                                        shapeMesh->getMesh()));
+          fcl::CollisionObject* fclCollObj
+              = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+          FCLUserData* userData = new FCLUserData;
+          userData->bodyNode    = _bodyNode;
+          userData->shape       = shape;
+          userData->fclCollNode = this;
+          fclCollObj->setUserData(userData);
+
+          mCollisionObjects.push_back(fclCollObj);
+        }
+
+        break;
+      }
+      case Shape::CYLINDER:
+      {
+        assert(dynamic_cast<CylinderShape*>(shape));
+        dynamics::CylinderShape* cylinder = static_cast<CylinderShape*>(shape);
+
+        const double radius = cylinder->getRadius();
+        const double height = cylinder->getHeight();
+
+        boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+            new fcl::Cylinder(radius, height));
+
+        fcl::CollisionObject* fclCollObj
+            = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+        FCLUserData* userData = new FCLUserData;
+        userData->bodyNode    = _bodyNode;
+        userData->shape       = shape;
+        userData->fclCollNode = this;
+        fclCollObj->setUserData(userData);
+
+        mCollisionObjects.push_back(fclCollObj);
+
+        break;
+      }
+      case Shape::MESH:
+      {
+        assert(dynamic_cast<MeshShape*>(shape));
+        MeshShape* shapeMesh = static_cast<MeshShape*>(shape);
+
+        boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+            createMesh<fcl::OBBRSS>(shapeMesh->getScale()[0],
+                                    shapeMesh->getScale()[1],
+                                    shapeMesh->getScale()[2],
+                                    shapeMesh->getMesh()));
+
+        fcl::CollisionObject* fclCollObj
+            = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+        FCLUserData* userData = new FCLUserData;
+        userData->bodyNode    = _bodyNode;
+        userData->shape       = shape;
+        userData->fclCollNode = this;
+        fclCollObj->setUserData(userData);
+
+        mCollisionObjects.push_back(fclCollObj);
+
+        break;
+      }
+      case Shape::SOFT_MESH:
+      {
+        assert(dynamic_cast<SoftMeshShape*>(shape));
+        SoftMeshShape* softMeshShape = static_cast<SoftMeshShape*>(shape);
+
+        boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+            createSoftMesh<fcl::OBBRSS>(
+                softMeshShape->getAssimpMesh(),
+                FCLTypes::convertTransform(Eigen::Isometry3d::Identity())));
+
+        fcl::CollisionObject* fclCollObj
+            = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+        FCLUserData* userData = new FCLUserData;
+        userData->bodyNode    = _bodyNode;
+        userData->shape       = shape;
+        userData->fclCollNode = this;
+        fclCollObj->setUserData(userData);
+
+        mCollisionObjects.push_back(fclCollObj);
+
         break;
       }
       default:
       {
-        std::cout << "ERROR: Collision checking does not support "
-                  << _bodyNode->getName()
-                  << "'s Shape type\n";
+        dterr << "[FCLCollisionNode::FCLCollisionNode] Attempting to create "
+              << "unsupported shape type '" << shape->getShapeType() << "' of '"
+              << _bodyNode->getName() << "'." <<  std::endl;
         break;
       }
     }
@@ -122,31 +220,110 @@ FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
 //==============================================================================
 FCLCollisionNode::~FCLCollisionNode()
 {
+  for (const auto& collObj : mCollisionObjects)
+  {
+    assert(collObj);
+
+    delete static_cast<FCLUserData*>(collObj->getUserData());
+    delete collObj;
+  }
 }
 
 //==============================================================================
 size_t FCLCollisionNode::getNumCollisionGeometries() const
 {
-  return mCollisionGeometries.size();
+  return getNumCollisionObjects();
 }
 
 //==============================================================================
-fcl::CollisionGeometry*FCLCollisionNode::getCollisionGeometry(size_t _idx) const
+size_t FCLCollisionNode::getNumCollisionObjects() const
 {
-  return mCollisionGeometries[_idx];
+  return mCollisionObjects.size();
+}
+
+//==============================================================================
+const fcl::CollisionGeometry* FCLCollisionNode::getCollisionGeometry(
+    size_t _idx) const
+{
+  return getCollisionObject(_idx)->getCollisionGeometry();
+}
+
+//==============================================================================
+fcl::CollisionObject* FCLCollisionNode::getCollisionObject(size_t _idx) const
+{
+  assert(_idx < mCollisionObjects.size());
+  return mCollisionObjects[_idx];
 }
 
 //==============================================================================
 fcl::Transform3f FCLCollisionNode::getFCLTransform(size_t _idx) const
 {
-  Eigen::Isometry3d worldTrans = mBodyNode->getTransform()
-                                 * mShapes[_idx]->getLocalTransform();
+  Eigen::Isometry3d worldTrans
+      = mBodyNode->getTransform()
+        * mBodyNode->getCollisionShape(_idx)->getLocalTransform();
 
   return fcl::Transform3f(
         fcl::Matrix3f(worldTrans(0, 0), worldTrans(0, 1), worldTrans(0, 2),
                       worldTrans(1, 0), worldTrans(1, 1), worldTrans(1, 2),
                       worldTrans(2, 0), worldTrans(2, 1), worldTrans(2, 2)),
         fcl::Vec3f(worldTrans(0, 3), worldTrans(1, 3), worldTrans(2, 3)));
+}
+
+//==============================================================================
+void FCLCollisionNode::updateFCLCollisionObjects()
+{
+  using dart::dynamics::BodyNode;
+  using dart::dynamics::Shape;
+  using dart::dynamics::SoftMeshShape;
+
+  for (auto& fclCollObj : mCollisionObjects)
+  {
+    FCLUserData* userData
+        = static_cast<FCLUserData*>(fclCollObj->getUserData());
+
+    BodyNode* bodyNode = userData->bodyNode;
+    Shape*    shape    = userData->shape;
+
+    // Update shape's transform
+    const Eigen::Isometry3d W = bodyNode->getWorldTransform()
+                                * shape->getLocalTransform();
+    fclCollObj->setTransform(FCLTypes::convertTransform(W));
+    fclCollObj->computeAABB();
+
+    // Update soft-body's vertices
+//    if (shape->getShapeType() == Shape::SOFT_MESH)
+//    {
+//      assert(dynamic_cast<const SoftMeshShape*>(shape));
+//      SoftMeshShape* softMeshShape = static_cast<SoftMeshShape*>(shape);
+
+//      const aiMesh* mesh = softMeshShape->getAssimpMesh();
+//      softMeshShape->update();
+
+//      const boost::shared_ptr<const CollisionGeometry> collGeom
+//          = fclCollObj->getCollisionGeometry();
+
+//      const fcl::BVHModel<fcl::OBBRSS>* bvhModel
+//          = static_cast<const fcl::BVHModel<fcl::OBBRSS>*>(collGeom);
+
+//      bvhModel->beginUpdateModel();
+
+//      for (unsigned int j = 0; j < mesh->mNumFaces; j++)
+//      {
+//        fcl::Vec3f vertices[3];
+//        for (unsigned int k = 0; k < 3; k++)
+//        {
+//          const aiVector3D& vertex
+//              = mesh->mVertices[mesh->mFaces[j].mIndices[k]];
+//          vertices[k] = fcl::Vec3f(vertex.x, vertex.y, vertex.z);
+//          vertices[k] = shapeT.transform(vertices[k]);
+//        }
+//        bvhModel->updateTriangle(vertices[0], vertices[1], vertices[2]);
+//      }
+
+//      bvhModel->endUpdateModel();
+//    }
+
+  }
 }
 
 //==============================================================================
@@ -174,6 +351,32 @@ fcl::BVHModel<BV>* createMesh(float _scaleX, float _scaleY, float _scaleZ,
       model->addTriangle(vertices[0], vertices[1], vertices[2]);
     }
   }
+  model->endModel();
+  return model;
+}
+
+//==============================================================================
+template<class BV>
+fcl::BVHModel<BV>* createSoftMesh(const aiMesh* _mesh,
+                                  const fcl::Transform3f& _transform)
+{
+  assert(_mesh);
+  fcl::BVHModel<BV>* model = new fcl::BVHModel<BV>;
+  model->beginModel();
+
+  for (unsigned int i = 0; i < _mesh->mNumFaces; i++)
+  {
+    fcl::Vec3f vertices[3];
+    for (unsigned int j = 0; j < 3; j++)
+    {
+      const aiVector3D& vertex
+          = _mesh->mVertices[_mesh->mFaces[i].mIndices[j]];
+      vertices[j] = fcl::Vec3f(vertex.x, vertex.y, vertex.z);
+      vertices[j] = _transform.transform(vertices[j]);
+    }
+    model->addTriangle(vertices[0], vertices[1], vertices[2]);
+  }
+
   model->endModel();
   return model;
 }

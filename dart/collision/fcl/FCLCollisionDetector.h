@@ -39,6 +39,8 @@
 #define DART_COLLISION_FCL_FCLCOLLISIONDETECTOR_H_
 
 #include <fcl/collision_object.h>
+#include <fcl/collision_data.h>
+#include <fcl/broadphase/broadphase.h>
 
 #include "dart/collision/CollisionDetector.h"
 
@@ -57,22 +59,30 @@ public:
   /// Destructor
   virtual ~FCLCollisionDetector();
 
-  // Documentation inherited
-  virtual CollisionNode* createCollisionNode(dynamics::BodyNode* _bodyNode)
-  override;
 
   // Documentation inherited
   virtual bool detectCollision(bool _checkAllCollisions,
                                bool _calculateContactPoints) override;
 
-protected:
   // Documentation inherited
-  virtual bool detectCollision(CollisionNode* _node1, CollisionNode* _node2,
-                               bool _calculateContactPoints) override;
+  virtual CollisionNode* createCollisionNode(dynamics::BodyNode* _bodyNode)
+  override;
 
   /// Get collision node given FCL collision geometry
   CollisionNode* findCollisionNode(
       const fcl::CollisionGeometry* _fclCollGeom) const;
+
+  /// Get collision node given FCL collision object
+  FCLCollisionNode* findCollisionNode(
+      const fcl::CollisionObject* _fclCollObj) const;
+protected:
+
+  // Documentation inherited
+  virtual bool detectCollision(CollisionNode* _node1, CollisionNode* _node2,
+                               bool _calculateContactPoints) override;
+
+  /// Broad-phase collision checker of FCL
+  fcl::DynamicAABBTreeCollisionManager* mBroadPhaseAlg;
 };
 
 }  // namespace collision
