@@ -45,7 +45,7 @@
 #include "dart/dynamics/SoftBodyNode.h"
 #include "dart/dynamics/Skeleton.h"
 #include "dart/dynamics/Shape.h"
-#include "dart/collision/fcl_mesh/FCLMeshCollisionDetector.h"
+#include "dart/collision/fcl/FCLCollisionDetector.h"
 #include "dart/lcpsolver/lcp.h"
 
 #define DART_ERROR_ALLOWANCE 0.0

@@ -73,11 +73,18 @@ FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
         dynamics::EllipsoidShape* ellipsoid
             = static_cast<dynamics::EllipsoidShape*>(shape);
 
-        mCollisionGeometries.push_back(
-              new fcl::Ellipsoid(ellipsoid->getSize()[0] * 0.5,
-                                 ellipsoid->getSize()[1] * 0.5,
-                                 ellipsoid->getSize()[2] * 0.5));
-
+        if (ellipsoid->isSphere())
+        {
+          mCollisionGeometries.push_back(
+                new fcl::Sphere(ellipsoid->getSize()[0] * 0.5));
+        }
+        else
+        {
+          mCollisionGeometries.push_back(
+                new fcl::Ellipsoid(ellipsoid->getSize()[0] * 0.5,
+                                   ellipsoid->getSize()[1] * 0.5,
+                                   ellipsoid->getSize()[2] * 0.5));
+        }
         break;
       }
       case dynamics::Shape::CYLINDER:

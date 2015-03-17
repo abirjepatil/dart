@@ -41,7 +41,7 @@
 #include "dart/dynamics/SoftBodyNode.h"
 #include "dart/dynamics/Joint.h"
 #include "dart/dynamics/Skeleton.h"
-#include "dart/collision/fcl_mesh/FCLMeshCollisionDetector.h"
+#include "dart/collision/fcl/FCLCollisionDetector.h"
 #include "dart/collision/dart/DARTCollisionDetector.h"
 #ifdef HAVE_BULLET_COLLISION
   #include "dart/collision/bullet/BulletCollisionDetector.h"
@@ -61,7 +61,7 @@ using namespace dynamics;
 
 //==============================================================================
 ConstraintSolver::ConstraintSolver(double _timeStep)
-  : mCollisionDetector(new collision::FCLMeshCollisionDetector()),
+  : mCollisionDetector(new collision::FCLCollisionDetector()),
     mTimeStep(_timeStep),
     mLCPSolver(new DantzigLCPSolver(mTimeStep))
 {

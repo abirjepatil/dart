@@ -38,6 +38,10 @@
 #ifndef DART_COLLISION_FCLMESH_FCLMESHCOLLISIONNODE_H_
 #define DART_COLLISION_FCLMESH_FCLMESHCOLLISIONNODE_H_
 
+#warning The dart/collision/fcl_mesh/FCLMeshCollisionNode.h header file is \\
+  deprecated as of dart 4.3 and will be removed in dart 5.0. Please use \\
+  FCLCollisionNode by include dart/collision/fcl/FCLCollisionNode.h instead.
+
 #include <vector>
 
 #include <assimp/mesh.h>

@@ -67,7 +67,7 @@
             </joint>
         </skeleton>	
         
-        <!--skeleton name="sphere skeleton">
+        <skeleton name="sphere skeleton">
             <body name="sphere">
                 <gravity>1</gravity>
                 <transformation>-0.2 -0.0 0 1 2 3</transformation>
@@ -78,18 +78,18 @@
                 <visualization_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <sphere>
-                            <radius>0.05</radius>
-                        </sphere>
+                        <ellipsoid>
+                            <size>0.1 0.1 0.1</size>
+                        </ellipsoid>
                     </geometry>
                     <color>0.3 0.8 0.3</color>
                 </visualization_shape>
                 <collision_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <sphere>
-                            <radius>0.05</radius>
-                        </sphere>
+                        <ellipsoid>
+                            <size>0.1 0.1 0.1</size>
+                        </ellipsoid>
                     </geometry>
                 </collision_shape>                                
             </body>
@@ -98,7 +98,7 @@
                 <parent>world</parent>
                 <child>sphere</child>
             </joint>
-        </skeleton-->
+        </skeleton>
         
         <skeleton name="ellipsoid skeleton">
             <body name="ellipsoid">

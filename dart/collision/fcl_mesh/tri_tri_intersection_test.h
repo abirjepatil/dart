@@ -2,6 +2,9 @@
 #define _TRI_TRI_INTERSECTION_TEST_
 
 
+#warning The dart/collision/fcl_mesh/tri_tri_intersection_test.h header file \\
+  is deprecated as of dart 4.3 and will be removed in dart 5.0.
+
 #include <math.h>
 
 #define FABS(x) ((float)fabs(x))        /* implement as is fastest on your machine */

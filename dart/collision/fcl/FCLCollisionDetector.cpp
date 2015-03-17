@@ -51,7 +51,6 @@ namespace collision {
 FCLCollisionDetector::FCLCollisionDetector()
   : CollisionDetector()
 {
-  std::cout << "It's FCL detector!" << std::endl;
 }
 
 //==============================================================================

@@ -88,16 +88,13 @@ struct Contact {
   /// Penetration depth
   double penetrationDepth;
 
-  // TODO(JS): triID1 will be deprecated when we don't use fcl_mesh
-  /// \brief
+  /// Triangle id if shape 1 is mesh (supported by fcl only)
   int triID1;
 
-  // TODO(JS): triID2 will be deprecated when we don't use fcl_mesh
-  /// \brief
+  /// Triangle id if shape 2 is mesh (supported by fcl only)
   int triID2;
 
-  // TODO(JS): userData is an experimental variable.
-  /// \brief User data.
+  /// User data
   void* userData;
 };
 

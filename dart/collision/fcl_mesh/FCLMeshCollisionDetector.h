@@ -38,6 +38,11 @@
 #ifndef DART_COLLISION_FCL_MESH_FCLMESHCOLLISIONDETECTOR_H_
 #define DART_COLLISION_FCL_MESH_FCLMESHCOLLISIONDETECTOR_H_
 
+#warning The dart/collision/fcl_mesh/FCLMeshCollisionDetector.h header file \\
+  is deprecated as of dart 4.3 and will be removed in dart 5.0. Please use \\
+  FCLCollisionDetector by include dart/collision/fcl/FCLCollisionDetector.h \\
+  instead.
+
 #include "dart/collision/CollisionDetector.h"
 
 namespace dart {

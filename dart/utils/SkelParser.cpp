@@ -47,8 +47,6 @@
 #endif
 #include "dart/collision/dart/DARTCollisionDetector.h"
 #include "dart/collision/fcl/FCLCollisionDetector.h"
-#include "dart/collision/fcl_mesh/FCLMeshCollisionDetector.h"
-//#include "dart/constraint/OldConstraintDynamics.h"
 #include "dart/constraint/ConstraintSolver.h"
 #include "dart/dynamics/BodyNode.h"
 #include "dart/dynamics/SoftBodyNode.h"
@@ -205,8 +203,11 @@ simulation::World* SkelParser::readWorld(tinyxml2::XMLElement* _worldElement) {
       std::string strCD = getValueString(physicsElement, "collision_detector");
       if (strCD == "fcl_mesh")
       {
+        dtwarn << "[SkelParser::readWorld] Attempting to use `fcl_mesh` "
+               << "collision detector, which is deprecated as of DART 4.3. "
+               << "DART uses 'fcl' collision detector instead." << std::endl;
         newWorld->getConstraintSolver()->setCollisionDetector(
-              new collision::FCLMeshCollisionDetector());
+              new collision::FCLCollisionDetector());
       }
       else if (strCD == "fcl")
       {
@@ -227,15 +228,17 @@ simulation::World* SkelParser::readWorld(tinyxml2::XMLElement* _worldElement) {
 #endif
       else
       {
-        dtwarn << "Unknown collision detector[" << strCD << "]. "
-               << "Default collision detector[fcl] will be loaded."
-               << std::endl;
+        dtwarn << "[SkelParser::readWorld] Attempting to use unsupported "
+               << "collision detector '" << strCD << ". "
+               << "DART uses 'fcl' collision detector instead." << std::endl;
+        newWorld->getConstraintSolver()->setCollisionDetector(
+              new collision::FCLCollisionDetector());
       }
     }
     else
     {
       newWorld->getConstraintSolver()->setCollisionDetector(
-            new collision::FCLMeshCollisionDetector());
+            new collision::FCLCollisionDetector());
     }
   }
 
