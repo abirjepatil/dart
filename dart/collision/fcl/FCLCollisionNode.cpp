@@ -45,6 +45,7 @@
 #include "dart/dynamics/BoxShape.h"
 #include "dart/dynamics/EllipsoidShape.h"
 #include "dart/dynamics/CylinderShape.h"
+#include "dart/dynamics/PlaneShape.h"
 #include "dart/dynamics/Shape.h"
 #include "dart/dynamics/MeshShape.h"
 #include "dart/dynamics/SoftMeshShape.h"
@@ -61,6 +62,7 @@ FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
   using dynamics::BoxShape;
   using dynamics::EllipsoidShape;
   using dynamics::CylinderShape;
+  using dynamics::PlaneShape;
   using dynamics::MeshShape;
   using dynamics::SoftMeshShape;
 
@@ -159,6 +161,30 @@ FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
 
         break;
       }
+      case Shape::PLANE:
+      {
+        assert(dynamic_cast<PlaneShape*>(shape));
+        dynamics::PlaneShape* plane = static_cast<PlaneShape*>(shape);
+
+        const Eigen::Vector3d normal = plane->getNormal();
+        const double          offset = plane->getOffset();
+
+        boost::shared_ptr<fcl::CollisionGeometry> fclCollGeom(
+            new fcl::Plane(FCLTypes::convertVector3(normal), offset));
+
+        fcl::CollisionObject* fclCollObj
+            = new fcl::CollisionObject(fclCollGeom, getFCLTransform(i));
+
+        FCLUserData* userData = new FCLUserData;
+        userData->bodyNode    = _bodyNode;
+        userData->shape       = shape;
+        userData->fclCollNode = this;
+        fclCollObj->setUserData(userData);
+
+        mCollisionObjects.push_back(fclCollObj);
+
+        break;
+      }
       case Shape::MESH:
       {
         assert(dynamic_cast<MeshShape*>(shape));
@@ -210,7 +236,7 @@ FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
       {
         dterr << "[FCLCollisionNode::FCLCollisionNode] Attempting to create "
               << "unsupported shape type '" << shape->getShapeType() << "' of '"
-              << _bodyNode->getName() << "'." <<  std::endl;
+              << _bodyNode->getName() << "' body node." <<  std::endl;
         break;
       }
     }

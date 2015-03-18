@@ -13,18 +13,20 @@
                 <visualization_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <box>
-                            <size>2.5 0.05 2.5</size>
-                        </box>
+                        <plane>
+                            <normal>0 -1 0</normal>
+                            <offset>0</offset>
+                        </plane>
                     </geometry>
                     <color>0.95 0.95 0.95</color>
                 </visualization_shape>
                 <collision_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <box>
-                            <size>2.5 0.05 2.5</size>
-                        </box>
+                        <plane>
+                            <normal>0 -1 0</normal>
+                            <offset>0</offset>
+                        </plane>
                     </geometry>
                 </collision_shape>                                
             </body>
