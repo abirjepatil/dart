@@ -151,7 +151,7 @@ bool FCLCollisionDetector::detectCollision(bool /*_checkAllCollisions*/,
   CollisionData collData;
   collData.request.enable_contact = _calculateContactPoints;
   collData.request.num_max_contacts = mNumMaxContacts;
-  collData.request.gjk_solver_type = fcl::GST_INDEP;
+  collData.request.gjk_solver_type = fcl::GST_LIBCCD;
   collData.request.num_max_contacts = getNumMaxContacts();
   collData.collisionDetector = this;
 
