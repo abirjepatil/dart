@@ -13,20 +13,26 @@
                 <visualization_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <plane>
-                            <normal>0 -1 0</normal>
+                        <!-- <plane>
+                            <normal>0 1 0</normal>
                             <offset>0</offset>
-                        </plane>
+                        </plane>  -->
+                        <box>
+                            <size>10 0.01 10</size>
+                        </box>
                     </geometry>
                     <color>0.95 0.95 0.95</color>
                 </visualization_shape>
                 <collision_shape>
                     <transformation>0 0 0 0 0 0</transformation>
                     <geometry>
-                        <plane>
-                            <normal>0 -1 0</normal>
+                        <!-- <plane>
+                            <normal>0 1 0</normal>
                             <offset>0</offset>
-                        </plane>
+                        </plane>  -->
+                        <box>
+                            <size>10 0.01 10</size>
+                        </box>
                     </geometry>
                 </collision_shape>                                
             </body>
@@ -34,7 +40,7 @@
                 <parent>world</parent>
                 <child>ground</child>
             </joint>
-        </skeleton>	
+        </skeleton> 
         
         <skeleton name="box skeleton">
             <body name="box">
@@ -67,7 +73,7 @@
                 <parent>world</parent>
                 <child>box</child>
             </joint>
-        </skeleton>	
+        </skeleton> 
         
         <skeleton name="sphere skeleton">
             <body name="sphere">
@@ -102,7 +108,7 @@
             </joint>
         </skeleton>
         
-        <skeleton name="ellipsoid skeleton">
+<!--         <skeleton name="ellipsoid skeleton">
             <body name="ellipsoid">
                 <gravity>1</gravity>
                 <transformation>-0.0 -0.0 0 1 2 3</transformation>
@@ -133,7 +139,7 @@
                 <parent>world</parent>
                 <child>ellipsoid</child>
             </joint>
-        </skeleton>	
+        </skeleton>  -->
 
         <skeleton name="cylinder skeleton">
             <body name="cylinder">
@@ -168,7 +174,7 @@
                 <parent>world</parent>
                 <child>cylinder</child>
             </joint>
-        </skeleton>	
+        </skeleton> 
 
         <skeleton name="mesh skeleton">
             <body name="mesh">
@@ -203,7 +209,7 @@
                 <parent>world</parent>
                 <child>mesh</child>
             </joint>
-        </skeleton>	
+        </skeleton> 
 
     </world>
 </skel>

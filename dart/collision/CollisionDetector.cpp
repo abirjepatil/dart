@@ -274,7 +274,8 @@ bool CollisionDetector::containSkeleton(const dynamics::Skeleton* _skeleton)
 bool CollisionDetector::getPairCollidable(const CollisionNode* _node1,
                                           const CollisionNode* _node2)
 {
-  assert(_node1 != _node2);
+  if (_node1 == _node2)
+    return false;
 
   size_t index1 = _node1->getIndex();
   size_t index2 = _node2->getIndex();

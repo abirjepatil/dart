@@ -37,6 +37,7 @@
 #include "dart/collision/fcl/FCLCollisionNode.h"
 
 #include <assimp/scene.h>
+#include <boost/shared_ptr.hpp>
 #include <fcl/shape/geometric_shapes.h>
 #include <fcl/shape/geometric_shape_to_BVH_model.h>
 
@@ -53,6 +54,21 @@
 
 namespace dart {
 namespace collision {
+
+// Create FCL mesh from Assimp mesh
+template<class BV>
+fcl::BVHModel<BV>* createMesh(float _sizeX, float _sizeY, float _sizeZ,
+                              const aiScene* _mesh);
+
+// Create FCL mesh from Assimp mesh
+template<class BV>
+fcl::BVHModel<BV>* createSoftMesh(const aiMesh* _mesh,
+                                  const fcl::Transform3f& _transform);
+
+// Create FCL mesh from ellipsoid shape
+template<class BV>
+DEPRECATED(4.3)
+fcl::BVHModel<BV>* createEllipsoid(float _sizeX, float _sizeY, float _sizeZ);
 
 //==============================================================================
 FCLCollisionNode::FCLCollisionNode(dynamics::BodyNode* _bodyNode)
@@ -317,38 +333,36 @@ void FCLCollisionNode::updateFCLCollisionObjects()
     fclCollObj->computeAABB();
 
     // Update soft-body's vertices
-//    if (shape->getShapeType() == Shape::SOFT_MESH)
-//    {
-//      assert(dynamic_cast<const SoftMeshShape*>(shape));
-//      SoftMeshShape* softMeshShape = static_cast<SoftMeshShape*>(shape);
+    if (shape->getShapeType() == Shape::SOFT_MESH)
+    {
+      assert(dynamic_cast<const SoftMeshShape*>(shape));
+      SoftMeshShape* softMeshShape = static_cast<SoftMeshShape*>(shape);
 
-//      const aiMesh* mesh = softMeshShape->getAssimpMesh();
-//      softMeshShape->update();
+      const aiMesh* mesh = softMeshShape->getAssimpMesh();
+      softMeshShape->update();
 
-//      const boost::shared_ptr<const CollisionGeometry> collGeom
-//          = fclCollObj->getCollisionGeometry();
+      const boost::shared_ptr<fcl::CollisionGeometry> collGeom
+          = boost::const_pointer_cast<fcl::CollisionGeometry>(
+              fclCollObj->collisionGeometry());
+      boost::shared_ptr<fcl::BVHModel<fcl::OBBRSS>> bvhModel
+          = boost::dynamic_pointer_cast<fcl::BVHModel<fcl::OBBRSS>>(collGeom);
 
-//      const fcl::BVHModel<fcl::OBBRSS>* bvhModel
-//          = static_cast<const fcl::BVHModel<fcl::OBBRSS>*>(collGeom);
+      bvhModel->beginUpdateModel();
 
-//      bvhModel->beginUpdateModel();
+      for (unsigned int j = 0; j < mesh->mNumFaces; j++)
+      {
+        fcl::Vec3f vertices[3];
+        for (unsigned int k = 0; k < 3; k++)
+        {
+          const aiVector3D& vertex
+              = mesh->mVertices[mesh->mFaces[j].mIndices[k]];
+          vertices[k] = fcl::Vec3f(vertex.x, vertex.y, vertex.z);
+        }
+        bvhModel->updateTriangle(vertices[0], vertices[1], vertices[2]);
+      }
 
-//      for (unsigned int j = 0; j < mesh->mNumFaces; j++)
-//      {
-//        fcl::Vec3f vertices[3];
-//        for (unsigned int k = 0; k < 3; k++)
-//        {
-//          const aiVector3D& vertex
-//              = mesh->mVertices[mesh->mFaces[j].mIndices[k]];
-//          vertices[k] = fcl::Vec3f(vertex.x, vertex.y, vertex.z);
-//          vertices[k] = shapeT.transform(vertices[k]);
-//        }
-//        bvhModel->updateTriangle(vertices[0], vertices[1], vertices[2]);
-//      }
-
-//      bvhModel->endUpdateModel();
-//    }
-
+      bvhModel->endUpdateModel();
+    }
   }
 }
 

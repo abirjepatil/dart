@@ -102,21 +102,6 @@ private:
   std::vector<fcl::CollisionObject*> mCollisionObjects;
 };
 
-/// Create FCL mesh from Assimp mesh
-template<class BV>
-fcl::BVHModel<BV>* createMesh(float _sizeX, float _sizeY, float _sizeZ,
-                              const aiScene* _mesh);
-
-/// Create FCL mesh from Assimp mesh
-template<class BV>
-fcl::BVHModel<BV>* createSoftMesh(const aiMesh* _mesh,
-                                  const fcl::Transform3f& _transform);
-
-/// Create FCL mesh from ellipsoid shape
-template<class BV>
-DEPRECATED(4.3)
-fcl::BVHModel<BV>* createEllipsoid(float _sizeX, float _sizeY, float _sizeZ);
-
 }  // namespace collision
 }  // namespace dart
 
